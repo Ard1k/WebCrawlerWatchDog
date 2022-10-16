@@ -1,0 +1,15 @@
+C:\Users\bures\source\repos\WebCrawlerWatchDog\bin\Debug\net6.0\WebCrawlerWatchDog.exe
+C:\Users\bures\source\repos\WebCrawlerWatchDog\bin\Debug\net6.0\WebCrawlerWatchDog.deps.json
+C:\Users\bures\source\repos\WebCrawlerWatchDog\bin\Debug\net6.0\WebCrawlerWatchDog.runtimeconfig.json
+C:\Users\bures\source\repos\WebCrawlerWatchDog\bin\Debug\net6.0\WebCrawlerWatchDog.dll
+C:\Users\bures\source\repos\WebCrawlerWatchDog\bin\Debug\net6.0\WebCrawlerWatchDog.pdb
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.csproj.AssemblyReference.cache
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.AssemblyInfoInputs.cache
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.AssemblyInfo.cs
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.csproj.CoreCompileInputs.cache
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.dll
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\refint\WebCrawlerWatchDog.dll
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.pdb
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\WebCrawlerWatchDog.genruntimeconfig.cache
+C:\Users\bures\source\repos\WebCrawlerWatchDog\obj\Debug\net6.0\ref\WebCrawlerWatchDog.dll
