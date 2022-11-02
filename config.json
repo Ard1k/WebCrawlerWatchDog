@@ -1,0 +1,54 @@
+{
+  "UrlArray": [
+    {
+      "Url": "https://ceskamincovna.cz/stribrna-mince-psi-plemena---border-kolie-proof-389-14127-d",
+      "Name": "Border kolie"
+    },
+    {
+      "Url": "https://ceskamincovna.cz/stribrna-mince-crystal-coin---andel-strazny-se-srdickem-sk-proof-389-14363-d",
+      "Name": "Andel strazny"
+    },
+    {
+      "Url": "https://ceskamincovna.cz/stribrna-mince-crystal-coin---rok-tygra-proof-389-15348-d",
+      "Name": "Rok Tygra"
+    }
+  ],
+  "StoreDefinitions": [
+    {
+      "Name": "Na Příkopě 820/24, Praha 1",
+      "Sequence": "820/24, Praha 1"
+    },
+    {
+      "Name": "Havelská 503/19, Praha 1",
+      "Sequence": "503/19, Praha 1"
+    },
+    {
+      "Name": "Roosveltova 419/20, Brno - střed",
+      "Sequence": "419/20, Brno - střed"
+    },
+    {
+      "Name": "Mírové náměstí 15, Jablonec nad Nisou",
+      "Sequence": "15, Jablonec nad Nisou"
+    },
+    {
+      "Name": "Suché Mýto 1, Bratislava",
+      "Sequence": "1, Bratislava"
+    }
+  ],
+  "UnavailableKeywords": [
+    "nedostupná",
+    "není skladem",
+    "nedostupný"
+  ],
+  "MailSettings": {
+    "SmtpServer": "smtp.office365.com",
+    "Port": 587,
+    "SmtpUsername": "smtpUser",
+    "SmtpPassword": "smtpPass",
+    "Sender": "sender@email.cz",
+    "Recipient": "recipient@email.cz",
+    "Subject": "DogCrawler report",
+    "FoundSubjectPrefix": "JE TO SKLADEM PYCO",
+    "EnableSsl": true
+  }
+}
