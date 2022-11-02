@@ -95,8 +95,8 @@ namespace WebCrawlerWatchDog
 						if (isAvail)
 						{
 							isAnyCoinAvailable = true;
-							sb.Append($" SKLADEM! Mince: {page.Name ?? "unk_page_name"} Obchod: {s.Name ?? "unk"} Stav: {status}");
-							sb.AppendLine();
+							sb.AppendLine($" SKLADEM! Mince: {page.Name ?? "unk_page_name"} Url: {page.Url}");
+							break;
 						}
 					}
 				}
