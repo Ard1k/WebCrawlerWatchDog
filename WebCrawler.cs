@@ -16,95 +16,94 @@ namespace WebCrawlerWatchDog
 		{
 			StringBuilder sb = new StringBuilder();
 			StringBuilder log = new StringBuilder();
-			Console.WriteLine("ceskamincovna.cz watchdog crawler v1.1");
-			sb.AppendLine("ceskamincovna.cz watchdog crawler v1.1");
+			Console.WriteLine("rouming crawler v1.1");
+			sb.AppendLine("rouming crawler v1.1");
 			Console.WriteLine("--------------------------------------");
 			sb.AppendLine("--------------------------------------");
 			sb.AppendLine();
 
-			bool isAnyCoinAvailable = false;
+			string forumUrl = @"https://www.rouming.cz/roumingForum.php?thread=615145";
 
+			var psc = new Dictionary<string, int>();
+			int totalScores = 0;
 
-			#region inicializace a kontroly configu
-			if (!File.Exists("config.json"))
+			int pageNumber = 1;
+			while (true)
 			{
-				Console.WriteLine("CONF_ERROR - Nenalezen config file");
-				return;
-			}
+				string response = null;
 
-			var configText = File.ReadAllText("config.json");
-			CrawlerConfig crawlerConfig = null;
-			if (!string.IsNullOrEmpty(configText))
-			{
-				crawlerConfig = JsonConvert.DeserializeObject<CrawlerConfig>(configText);
-			}
+				//if (pageNumber > 2)
+				//	break; //debug
 
-			if (crawlerConfig == null)
-			{
-				Console.WriteLine("CONF_ERROR - Nezdarila se deserializace configu");
-				return;
-			}
-
-			if (crawlerConfig.UrlArray == null || crawlerConfig.UrlArray.Length <= 0)
-			{
-				Console.WriteLine("CONF_ERROR - Nezadany zadne url ke kontrole");
-				return;
-			}
-
-			if (crawlerConfig.StoreDefinitions == null || crawlerConfig.StoreDefinitions.Length <= 0)
-			{
-				Console.WriteLine("CONF_ERROR - Nezadany prodejny ke kontrole");
-				return;
-			}
-
-			#endregion
-
-			foreach (var page in crawlerConfig.UrlArray)
-			{
-				Console.WriteLine($"{page.Name ?? "UNK page"}");
-				log.AppendLine($"{page.Name ?? "UNK page"}");
 				try
 				{
-					string response = getResponse(page.Url);
-					if (string.IsNullOrEmpty(response))
-						throw new ApplicationException("	ERROR - invalid web response");
-
-					response = WebUtility.HtmlDecode(response);
-
-					foreach (StatsData s in crawlerConfig.StoreDefinitions)
-					{
-						string status = findAwail(response, s.Sequence);
-						if (string.IsNullOrEmpty(status))
-						{
-							Console.WriteLine($"	WARNING - Pro obchod [{s.Name ?? "undefined"}] - nenalezen status!");
-							log.AppendLine($"	WARNING - Pro obchod [{s.Name ?? "undefined"}] - nenalezen status!");
-						}
-						Console.WriteLine($"	{s.Name ?? "undefined"} - {status}");
-						log.AppendLine($"	{s.Name ?? "undefined"} - {status}");
-
-						bool isAvail = true;
-						foreach (var uKey in crawlerConfig.UnavailableKeywords)
-						{
-							if (status.ToLower().Contains(uKey.ToLower()))
-							{
-								isAvail = false; 
-								break;
-							}
-						}
-
-						if (isAvail)
-						{
-							isAnyCoinAvailable = true;
-							sb.AppendLine($" SKLADEM! Mince: {page.Name ?? "unk_page_name"} Url: {page.Url}");
-							break;
-						}
-					}
+					response = postResponse(forumUrl, pageNumber);
 				}
 				catch (Exception ex)
 				{
+					Console.WriteLine($"Exception while getting page: {pageNumber}");
+					Console.WriteLine("------------------------");
 					Console.WriteLine(ex.Message);
-					log.AppendLine(ex.Message);
+					break;
 				}
+
+				string regexPattern = "<input type=\"text\" name=\"page\" value=\"(\\d+)\" size=\"1\" class=\"input\"/>";
+				Match match = Regex.Match(response, regexPattern);
+
+				if (match.Success)
+				{
+					int recievedPage = Int32.Parse(match.Groups[1].Value);
+
+					if (recievedPage < pageNumber)
+					{
+						Console.WriteLine($"Finished on page: {recievedPage}");
+						break;
+					}
+
+					Console.WriteLine("Processing page number: " + recievedPage);
+				}
+				else
+				{
+					Console.WriteLine("No page number found in response!");
+					break;
+				}
+
+				string regexPatternPlayerScore = @"\d+\. (\w+) \((\d+) pts\.\)";
+				MatchCollection matches = Regex.Matches(response, regexPatternPlayerScore);
+
+				Console.WriteLine($"Scores found: {matches.Count}");
+				totalScores += matches.Count;
+
+				foreach (Match m in matches)
+				{
+					string name = m.Groups[1].Value.Trim();
+					int points = Int32.Parse(m.Groups[2].Value);
+
+					if (psc.ContainsKey(name))
+					{
+						psc[name] += points;
+					}
+					else
+					{
+						psc.Add(name, points);
+					}
+				}
+
+				pageNumber++;
+				Thread.Sleep(1000);
+			}
+
+			var list = psc.OrderByDescending(p => p.Value).Select(s => $"{s.Key} {s.Value} pts.").ToList();
+
+			Console.WriteLine($"Scores found: {totalScores}");
+			Console.WriteLine($"Unique players: {list.Count}");
+			Console.WriteLine("Leaderboards:");
+			Console.WriteLine("--------------");
+
+			foreach (var it in list)
+			{
+				Console.WriteLine(it);
+				sb.AppendLine(it);
 			}
 
 			sb.AppendLine();
@@ -112,47 +111,6 @@ namespace WebCrawlerWatchDog
 			sb.AppendLine();
 			sb.AppendLine("--- LOG ---");
 			sb.Append(log);
-
-			if (!string.IsNullOrEmpty(crawlerConfig.MailSettings?.SmtpServer))
-			{
-				Console.WriteLine("Sending mail");
-				try
-				{
-					var smtpClient = new SmtpClient(crawlerConfig.MailSettings?.SmtpServer, crawlerConfig.MailSettings?.Port > 0 ? crawlerConfig.MailSettings.Port : 587)
-					{
-						Credentials = new NetworkCredential(crawlerConfig.MailSettings?.SmtpUsername ?? "unknown", crawlerConfig.MailSettings?.SmtpPassword ?? "unknown"),
-						EnableSsl = crawlerConfig.MailSettings?.EnableSsl ?? false //pokud nebude v JSONU je default false!
-					};
-
-					string subject = crawlerConfig.MailSettings?.Subject ?? String.Empty;
-					if (isAnyCoinAvailable)
-						subject = (crawlerConfig.MailSettings?.FoundSubjectPrefix ?? String.Empty) + " " + subject;
-
-					smtpClient.Send(crawlerConfig.MailSettings?.Sender ?? "unknow", crawlerConfig.MailSettings?.Recipient ?? "unknown", subject, sb.ToString());
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine("ERROR sending email: " + ex.Message ?? String.Empty);
-				}
-				Console.WriteLine("Mail sent!");
-			}
-		}
-
-		static string findAwail(string response, string store_name)
-		{
-			int store_index = response.IndexOf(store_name);
-			if (store_index < 0)
-				return null;
-			int i1 = response.IndexOf("</div>", store_index);
-			if (i1 < 0)
-				return null;
-			int i2 = response.IndexOf("</div>", i1 + 6);
-			if (i2 < 0)
-				return null;
-			int i3 = response.Substring(0, i2 - 6).LastIndexOf('>');
-			if (i3 < 0)
-				return null;
-			return response.Substring(i3+1, i2 - i3 - 1).Replace("\r", String.Empty).Replace("\n", String.Empty).Trim();
 		}
 
 		static string getResponse(string url)
@@ -160,6 +118,33 @@ namespace WebCrawlerWatchDog
 			HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
 			httpWebRequest.Method = "GET";
 			httpWebRequest.Headers.Add(HttpRequestHeader.AcceptCharset, "utf-8");
+			HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+			if ((int)httpWebResponse.StatusCode < 200 || (int)httpWebResponse.StatusCode >= 300)
+				throw new ApplicationException($"	ERROR loading page: {(int)httpWebResponse.StatusCode} response code ");
+			return new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8).ReadToEnd();
+		}
+
+		static string postResponse(string url, int page)
+		{
+			var postData = "searchText=";
+			postData += "&searchTopic=";
+			postData += "&searchNick=";
+			postData += $"&page={page}";
+			postData += "&submit=J%C3%ADt";
+			//postData += "&polozka=" + Uri.EscapeDataString("datastring");
+			var data = Encoding.ASCII.GetBytes(postData);
+
+			HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
+			httpWebRequest.Method = "POST";
+			httpWebRequest.Headers.Add(HttpRequestHeader.AcceptCharset, "utf-8");
+			httpWebRequest.ContentType = "application/x-www-form-urlencoded";
+			httpWebRequest.ContentLength = data.Length;
+
+			using (var stream = httpWebRequest.GetRequestStream())
+			{
+				stream.Write(data, 0, data.Length);
+			}
+
 			HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 			if ((int)httpWebResponse.StatusCode < 200 || (int)httpWebResponse.StatusCode >= 300)
 				throw new ApplicationException($"	ERROR loading page: {(int)httpWebResponse.StatusCode} response code ");
