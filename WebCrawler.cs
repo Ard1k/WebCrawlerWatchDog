@@ -68,7 +68,8 @@ namespace WebCrawlerWatchDog
 					break;
 				}
 
-				string regexPatternPlayerScore = @"\d+\. (\w+) \((\d+) pts\.\)";
+				//string regexPatternPlayerScore = @"\d+\. (\w+) \((\d+) pts\.\)";
+				string regexPatternPlayerScore = @"\d+\.\s(.+?)\s\((\d+) pts\.\)";
 				MatchCollection matches = Regex.Matches(response, regexPatternPlayerScore);
 
 				Console.WriteLine($"Scores found: {matches.Count}");
@@ -100,10 +101,13 @@ namespace WebCrawlerWatchDog
 			Console.WriteLine("Leaderboards:");
 			Console.WriteLine("--------------");
 
+			int count = 1;
+
 			foreach (var it in list)
 			{
-				Console.WriteLine(it);
-				sb.AppendLine(it);
+				Console.WriteLine($"{count}. " + it);
+				sb.AppendLine($"{count}. " + it);
+				count++;
 			}
 
 			sb.AppendLine();
